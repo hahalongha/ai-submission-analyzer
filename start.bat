@@ -1,47 +1,47 @@
-﻿@echo off
+@echo off
 setlocal enabledelayedexpansion
 title AI Submission Analyzer
-echo ╔══════════════════════════════════════════╗
-echo ║  AI辅助投稿分析工具 - 启动中...         ║
-echo ╚══════════════════════════════════════════╝
+
+echo ============================================
+echo   AI Submission Analyzer - Starting...
+echo ============================================
 echo.
 
-REM 检查 Python 是否安装
+REM Check Python
 where python >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [错误] 未检测到 Python，请先安装 Python 3.8+
-    echo 下载地址：https://www.python.org/downloads/
+    echo [ERROR] Python 3.8+ is required but not found.
+    echo Please install from: https://www.python.org/downloads/
     pause
     exit /b 1
 )
 
-echo [信息] 已检测到 Python
+echo [ OK ] Python found.
 
-REM 自动创建虚拟环境（如果不存在）
+REM Setup venv and install deps if needed
 if not exist ".venv\Scripts\python.exe" (
-    echo [信息] 正在创建虚拟环境...
+    echo [INFO] Setting up virtual environment...
     python -m venv .venv
-    echo [信息] 正在安装依赖...
+    echo [INFO] Installing dependencies (this may take a while)...
     .venv\Scripts\python.exe -m pip install --upgrade pip -q
     .venv\Scripts\python.exe -m pip install -r requirements.txt -q
-    echo [信息] 环境准备完成！
-    echo.
+    echo [ OK ] Environment ready!
 )
 
-REM 检查端口占用
+REM Release port if in use
 netstat -ano | findstr ":7860" >nul 2>&1
 if %errorlevel% equ 0 (
-    echo [信息] 检测到端口 7860 已被占用，正在释放...
+    echo [INFO] Port 7860 is occupied. Releasing...
     for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":7860"') do (
         taskkill /F /PID %%a >nul 2>&1
     )
     timeout /t 2 /nobreak >nul
 )
 
-echo [信息] 启动完成！浏览器将自动打开 http://localhost:7860
-echo [提示] 首次使用请先在「设置 -> API密钥」中配置模型Key
+echo [INFO] Launching at http://localhost:7860
+echo [HINT] Configure API Key in: Settings -> API Keys
 echo.
+
 start http://localhost:7860
 .venv\Scripts\python.exe app.py
-
 pause
